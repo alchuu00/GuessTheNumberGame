@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block title %}Result{% endblock title %}
+
+{% block content %}
+<h4>{{message}}!</h4>
+<form method="post" action="/result">
+    <input type="text" name="guess" placeholder="Enter your guess: ">
+    <button type="submit">Submit</button>
+</form>
+{% endblock content %}
