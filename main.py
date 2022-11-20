@@ -7,7 +7,6 @@ from sqla_wrapper import SQLAlchemy
 app = Flask(__name__)
 db_url = os.getenv("DATABASE_URL", "sqlite:///db.sqlite").replace("postgres://", "postgresql://", 1)
 db = SQLAlchemy(db_url)
-db.create_all()
 
 
 class User(db.Model):
@@ -15,6 +14,9 @@ class User(db.Model):
     name = db.Column(db.String, unique=True)
     email = db.Column(db.String, unique=True)
     secret_num = db.Column(db.Integer, unique=False)
+
+
+db.create_all()
 
 
 @app.route("/", methods=["GET"])
@@ -59,7 +61,7 @@ def result():
     # get user from the database based on her/his email address
     user = db.query(User).filter_by(email=email_address).first()
 
-    if guess == User.secret_num:
+    if guess == user.secret_num:
         message = f"Congratulations {guess} was the secret number!"
         response = make_response(render_template("win.html", message=message))
 
@@ -67,12 +69,20 @@ def result():
         user.secret_number = new_secret
         user.save()
         return response
-    elif guess < User.secret_num:
+    elif guess < user.secret_num:
         message = f"try a number that's bigger than {guess}"
         return render_template("result.html", message=message)
-    elif guess > User.secret_num:
+    elif guess > user.secret_num:
         message = f"try a number that's smaller than {guess}"
         return render_template("result.html", message=message)
+
+    @app.route("/logout", methods=["GET"])
+    def logout():
+        response = make_response(redirect(url_for('index')))
+        response.set_cookie("email", expires=0)
+        response.set_cookie("name", expires=0)
+
+        return response
 
 
 if __name__ == '__main__':
