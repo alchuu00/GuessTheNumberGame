@@ -8,10 +8,6 @@
 
 <p>Hey {{user.name}}!</p>
 
-<form method="get" action="/logout">
-    <button type="submit">Logout</button>
-</form>
-
 <p>Your goal is to guess the secret number.</p>
 <p>You can choose between numbers from 1 to 30!</p>
 
@@ -27,6 +23,7 @@
 <form action="/login" method="post">
     <input name="user-name" placeholder="Enter your name" type="text"><br>
     <input name="user-email" placeholder="Enter your email address" type="email"><br>
+    <input name="user-password" type="password" placeholder="Enter your password"><br>
     <button>Login</button>
 </form>
 {% endif %}
