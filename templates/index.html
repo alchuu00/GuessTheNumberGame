@@ -3,7 +3,6 @@
 {% block title %}Guess the secret number{% endblock title %}
 {% block content %}
 {% if user %} <!--if user exists-->
-<h1>Guess The Secret Number Game</h1>
 <img width="15%" src="/static/img/dice.png">
 
 <p>Hey {{user.name}}!</p>
@@ -17,9 +16,9 @@
 </form>
 
 {% else %} <!--if user doesn't exists-->
-<h1>Guess The Secret Number Game</h1>
 <img width="15%" src="/static/img/dice.png">
 <br>
+<h1>Login</h1>
 <form action="/login" method="post">
     <input name="user-name" placeholder="Enter your name" type="text"><br>
     <input name="user-email" placeholder="Enter your email address" type="email"><br>

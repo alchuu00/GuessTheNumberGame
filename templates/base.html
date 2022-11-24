@@ -6,10 +6,23 @@
     <title>{% block title %}{% endblock title %}</title>
 </head>
 <body>
+<nav>
+    <div>
+        <a href="/">Game</a> |
+        <a href="/profile">Profile</a> |
+        <a href="/users">All users</a>
+    </div>
+    <div>
+        {% if user %}
+        <form action="/logout"><button>LOGOUT</button></form>
+        {% endif %}
+    </div>
+</nav>
 <div class="main">
-{% block content %}
-{% endblock content %}
-</form>
+    <h1>Guess the secret number</h1>
+
+    {% block content %}
+    {% endblock content %}
 </div>
 </body>
 </html>

@@ -18,6 +18,7 @@ class User(db.Model):
     password = db.Column(db.String)
     secret_num = db.Column(db.Integer, unique=False)
     session_token = db.Column(db.String)
+    deleted = db.Column(db.Boolean, default=False)
 
 
 db.create_all()
@@ -28,11 +29,98 @@ def index():
     session_token = request.cookies.get("session_token")
 
     if session_token:
-        user = db.query(User).filter_by(session_token=session_token).first()
+        user = db.query(User).filter_by(session_token=session_token, deleted=False).first()
     else:
         user = None
 
     return render_template("index.html", user=user)
+
+
+@app.route("/profile")
+def profile():
+    session_token = request.cookies.get("session_token")
+
+    user = db.query(User).filter_by(session_token=session_token, deleted=False).first()
+
+    if user:
+        return render_template("profile.html", user=user)
+    else:
+        return redirect(url_for("index"))
+
+
+@app.route("/profile/edit", methods=["GET", "POST"])
+def profile_edit():
+    session_token = request.cookies.get("session_token")
+
+    # get user from the database based on her/his email address
+    user = db.query(User).filter_by(session_token=session_token, deleted=False).first()
+
+    if request.method == "GET":
+        if user:  # if user is found
+            return render_template("profile_edit.html", user=user)
+        else:
+            return redirect(url_for("index"))
+
+    elif request.method == "POST":
+        name = request.form.get("profile-name")
+        email = request.form.get("profile-email")
+        old_password = request.form.get("old-password")
+        new_password = request.form.get("new-password")
+
+        if old_password and new_password:
+            hashed_old_password = hashlib.sha256(old_password.encode()).hexdigest()  # hash the old password
+            hashed_new_password = hashlib.sha256(new_password.encode()).hexdigest()  # hash the old password
+
+            # check if old password hash is equal to the password hash in the database
+            if hashed_old_password == user.password:
+                # if yes, save the new password hash in the database
+                user.password = hashed_new_password
+            else:
+                # if not, return error
+                return "Wrong (old) password! Go back and try again."
+
+        # update the user object
+        user.name = name
+        user.email = email
+
+        # store changes into the database
+        user.save()
+
+        return redirect(url_for("profile"))
+
+
+@app.route("/profile/delete", methods=["GET", "POST"])
+def profile_delete():
+    session_token = request.cookies.get("session_token")
+
+    # get user from the database based on her/his email address
+    user = db.query(User).filter_by(session_token=session_token, deleted=False).first()
+
+    if request.method == "GET":
+        if user:  # if user is found
+            return render_template("profile_delete.html", user=user)
+        else:
+            return redirect(url_for("index"))
+    elif request.method == "POST":
+        # delete the user in the database
+        user.deleted = True
+        user.save()
+
+        return redirect(url_for("index"))
+
+
+@app.route("/users", methods=["GET"])
+def all_users():
+    users = db.query(User).filter_by(deleted=False).all()  # find all un-deleted users
+
+    return render_template("users.html", users=users)
+
+
+@app.route("/user/<user_id>", methods=["GET"])
+def user_details(user_id):
+    user = db.query(User).get(int(user_id))  # .get() can help you query by the ID
+
+    return render_template("user_details.html", user=user)
 
 
 @app.route("/login", methods=["POST"])
@@ -54,8 +142,9 @@ def login():
     if not user:
         user = User(name=name, email=email, secret_num=secret_num, password=hashed_password)
         user.save()  # save user into the database
-
-    if hashed_password != user.password:
+    if user.deleted:
+        return "This user was deleted!"
+    elif hashed_password != user.password:
         return "WRONG PASSWORD! Go back and try again."
     elif hashed_password == user.password:
         # create a random session token for this user
@@ -79,7 +168,7 @@ def result():
     session_token = request.cookies.get("session_token")
 
     # get user from the database based on her/his session token
-    user = db.query(User).filter_by(session_token=session_token).first()
+    user = db.query(User).filter_by(session_token=session_token, deleted=False).first()
 
     if guess == user.secret_num:
         message = f"Congratulations {guess} was the secret number!"
@@ -95,6 +184,14 @@ def result():
     elif guess > user.secret_num:
         message = f"try a number that's smaller than {guess}"
         return render_template("result.html", message=message)
+
+
+@app.route("/logout", methods=["GET"])
+def logout():
+    response = make_response(redirect(url_for('index')))
+    response.set_cookie("session_token", expires=0)
+
+    return response
 
 
 if __name__ == '__main__':

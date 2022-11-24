@@ -1,5 +1,6 @@
 body {
     font-family: -apple-system,system-ui,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+    margin: 0px;
 
     display: flex;
 	flex-direction: column;
@@ -7,6 +8,24 @@ body {
 	justify-content: center;
 	align-items: center;
 	align-content: center;
+}
+
+nav {
+    display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	align-items: baseline;
+	align-content: stretch;
+
+    border-bottom: 1px solid black;
+    padding: 15px;
+    width:100vw;
+    color: white;
+}
+
+a {
+    text-decoration: none;
 }
 
 .main {
