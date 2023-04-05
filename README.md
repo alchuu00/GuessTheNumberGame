@@ -5,6 +5,8 @@
   <p>
     Simple number guessing game built with python! 
   </p>
+  
+  Live Preview: http://alchuu00.pythonanywhere.com/?retry=
 </div>
 
 <br />
